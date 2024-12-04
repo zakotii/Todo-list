@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}Todo List{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>TODO List</h1>
+
+    <!-- Sidebar -->
+    <div class="row">
+        <div class="col-md-3">
+            <ul class="list-group">
+                <li class="list-group-item"><a href="{% url 'home' %}">Home</a></li>
+                <li class="list-group-item"><a href="{% url 'tag_list' %}">Tags</a></li>
+            </ul>
+        </div>
+
+        <!-- Task List -->
+        <div class="col-md-9">
+            <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">Add Task</a>
+
+            {% if tasks %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Created</th>
+                            <th>Deadline</th>
+                            <th>Status</th>
+                            <th>Tags</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in tasks %}
+                        <tr>
+                            <td>{{ task.content }}</td>
+                            <td>{{ task.created_at }}</td>
+                            <td>{{ task.deadline|default:"—" }}</td>
+                            <td>
+                                {% if task.is_done %}
+                                    <span class="badge bg-success">Done</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Not Done</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for tag in task.tags.all %}
+                                    <span class="badge bg-info">{{ tag.name }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <a href="{% url 'update_task' task.id %}" class="btn btn-sm btn-warning">Update</a>
+                                <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-danger">Delete</a>
+                                {% if task.is_done %}
+                                    <a href="{% url 'toggle_task_status' task.id %}" class="btn btn-sm btn-secondary">Undo</a>
+                                {% else %}
+                                    <a href="{% url 'toggle_task_status' task.id %}" class="btn btn-sm btn-success">Complete</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p>No tasks found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
