@@ -1,10 +1,39 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Task, Tag
 from .forms import TaskForm, TagForm
+from django.utils.timezone import now
+
 
 def home(request):
-    tasks = Task.objects.all().order_by('-is_done', '-created_at')
-    return render(request, 'todo/home.html', {'tasks': tasks})
+    # Фильтры
+    tag_filter = request.GET.get('tag')
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+
+    tasks = Task.objects.all()
+
+    # Фильтрация по тегу
+    if tag_filter:
+        tasks = tasks.filter(tags__name=tag_filter)
+    
+    # Фильтрация по диапазону дат
+    if start_date:
+        tasks = tasks.filter(created_at__gte=start_date)
+    if end_date:
+        tasks = tasks.filter(created_at__lte=end_date)
+
+    # Статистика
+    completed_count = tasks.filter(is_done=True).count()
+
+    # Уведомления о приближающемся дедлайне
+    near_deadline_tasks = tasks.filter(deadline__isnull=False, deadline__lte=now()).exclude(is_done=True)
+
+    context = {
+        'tasks': tasks.order_by('is_done', '-created_at'),
+        'completed_count': completed_count,
+        'near_deadline_tasks': near_deadline_tasks,
+    }
+    return render(request, 'home.html', context)
 
 
 def task_create(request):
