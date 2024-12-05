@@ -70,3 +70,35 @@ def task_delete(request, pk):
     task = get_object_or_404(Task, pk=pk)
     task.delete()
     return redirect('home')
+
+
+def tag_list(request):
+    return render(request, 'tag_list.html')
+
+def add_task(request):
+    return render(request, 'task_form.html')
+
+
+def update_task(request, pk):
+    task = get_object_or_404(Task, pk=pk)  # Получаем задачу по её первичному ключу (id)
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            return redirect('home')  # Перенаправление на главную страницу после обновления
+    else:
+        form = TaskForm(instance=task)
+    return render(request, 'task_form.html', {'form': form})
+
+
+def delete_task(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+    task.delete()
+    return redirect('home')
+
+
+def toggle_task_status(request, pk):
+    task = get_object_or_404(Task, pk=pk)
+    task.is_done = not task.is_done
+    task.save()
+    return redirect('home')

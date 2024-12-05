@@ -15,15 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from todo import views
+from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('todo.urls')),
     path('', views.home, name='home'),
-    path('add-task/', views.add_task, name='add_task'),
-    path('update-task/<int:pk>/', views.update_task, name='update_task'),
-    path('delete-task/<int:pk>/', views.delete_task, name='delete_task'),
-    path('toggle-task-status/<int:pk>/', views.toggle_task_status, name='toggle_task_status'),
+    path('add-task/', views.task_create, name='add_task'),
+    path('update-task/<int:pk>/', views.task_update, name='update_task'),
+    path('delete-task/<int:pk>/', views.task_delete, name='delete_task'),
+    path('toggle-task-status/<int:pk>/', views.task_toggle, name='toggle_task_status'),  # Изменение здесь
     path('tags/', views.tag_list, name='tag_list'),
 ]
