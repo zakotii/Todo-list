@@ -102,3 +102,14 @@ def toggle_task_status(request, pk):
     task.is_done = not task.is_done
     task.save()
     return redirect('home')
+
+
+def add_tag(request):
+    if request.method == 'POST':
+        form = TagForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('tag_list')
+    else:
+        form = TagForm()
+    return render(request, 'todo/tag_form.html', {'form': form})

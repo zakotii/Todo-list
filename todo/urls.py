@@ -25,4 +25,5 @@ urlpatterns = [
     path('delete-task/<int:pk>/', views.task_delete, name='delete_task'),
     path('toggle-task-status/<int:pk>/', views.task_toggle, name='toggle_task_status'),  # Изменение здесь
     path('tags/', views.tag_list, name='tag_list'),
+    path('tags/add/', views.add_tag, name='add_tag'),  # Добавить маршрут для добавления тега
 ]
