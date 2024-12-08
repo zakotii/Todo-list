@@ -4,6 +4,11 @@ from .forms import TaskForm, TagForm
 from django.utils.timezone import now
 
 
+from django.shortcuts import render
+from .models import Task, Tag
+from .forms import TaskForm
+from django.utils.timezone import now
+
 def home(request):
     # Фильтры
     tag_filter = request.GET.get('tag')
@@ -11,6 +16,7 @@ def home(request):
     end_date = request.GET.get('end_date')
 
     tasks = Task.objects.all()
+    tags = Tag.objects.all()
 
     # Фильтрация по тегу
     if tag_filter:
@@ -28,12 +34,18 @@ def home(request):
     # Уведомления о приближающемся дедлайне
     near_deadline_tasks = tasks.filter(deadline__isnull=False, deadline__lte=now()).exclude(is_done=True)
 
+    # Передаём список тегов и другие данные в шаблон
     context = {
         'tasks': tasks.order_by('is_done', '-created_at'),
         'completed_count': completed_count,
         'near_deadline_tasks': near_deadline_tasks,
+        'tags': tags,  # Добавляем список тегов в контекст
     }
     return render(request, 'home.html', context)
+
+
+
+
 
 
 def task_create(request):

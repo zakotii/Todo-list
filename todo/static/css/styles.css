@@ -1,8 +1,42 @@
-.btn-success {
-    background-color: #4CAF50;
-    border-color: #6a4caf;
+body {
+    font-family: Arial, sans-serif;
 }
 
-.btn-secondary:hover {
-    background-color: rgb(227, 15, 15);
+.container {
+    margin-top: 20px;
+}
+
+.list-group-item a {
+    color: #000;
+    text-decoration: none;
+}
+
+.list-group-item a:hover {
+    text-decoration: underline;
+}
+
+.table th, .table td {
+    vertical-align: middle;
+}
+
+.badge {
+    padding: 0.5em 1em;
+    font-size: 0.75em;
+}
+
+.badge-primary {
+    background-color: #007bff;
+}
+
+.alert-info, .alert-warning {
+    font-size: 0.9em;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0,0,0,.05);
+}
+
+.btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
 }
