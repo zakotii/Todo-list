@@ -1,127 +1,80 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse_lazy
+from django.views.generic import ListView, CreateView, UpdateView, DeleteView
+from django.views import View
 from .models import Task, Tag
 from .forms import TaskForm, TagForm
 from django.utils.timezone import now
 
-
-from django.shortcuts import render
-from .models import Task, Tag
-from .forms import TaskForm
-from django.utils.timezone import now
-
-def home(request):
-    # Фильтры
-    tag_filter = request.GET.get('tag')
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-
-    tasks = Task.objects.all()
-    tags = Tag.objects.all()
-
-    # Фильтрация по тегу
-    if tag_filter:
-        tasks = tasks.filter(tags__name=tag_filter)
+class HomeView(ListView):
+    model = Task
+    template_name = 'home.html'
+    context_object_name = 'tasks'
     
-    # Фильтрация по диапазону дат
-    if start_date:
-        tasks = tasks.filter(created_at__gte=start_date)
-    if end_date:
-        tasks = tasks.filter(created_at__lte=end_date)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tag_filter = self.request.GET.get('tag')
+        start_date = self.request.GET.get('start_date')
+        end_date = self.request.GET.get('end_date')
+        tasks = Task.objects.all()
+        
+        if tag_filter:
+            tasks = tasks.filter(tags__name=tag_filter)
+        
+        if start_date:
+            tasks = tasks.filter(created_at__gte=start_date)
+        if end_date:
+            tasks = tasks.filter(created_at__lte=end_date)
+        
+        context['tasks'] = tasks.order_by('is_done', '-created_at')
+        context['completed_count'] = tasks.filter(is_done=True).count()
+        context['near_deadline_tasks'] = tasks.filter(deadline__isnull=False, deadline__lte=now()).exclude(is_done=True)
+        context['tags'] = Tag.objects.all()
+        return context
 
-    # Статистика
-    completed_count = tasks.filter(is_done=True).count()
+class TaskCreateView(CreateView):
+    model = Task
+    form_class = TaskForm
+    template_name = 'todo/task_form.html'
+    success_url = reverse_lazy('home')
 
-    # Уведомления о приближающемся дедлайне
-    near_deadline_tasks = tasks.filter(deadline__isnull=False, deadline__lte=now()).exclude(is_done=True)
+class TaskUpdateView(UpdateView):
+    model = Task
+    form_class = TaskForm
+    template_name = 'todo/task_form.html'
+    success_url = reverse_lazy('home')
 
-    # Передаём список тегов и другие данные в шаблон
-    context = {
-        'tasks': tasks.order_by('is_done', '-created_at'),
-        'completed_count': completed_count,
-        'near_deadline_tasks': near_deadline_tasks,
-        'tags': tags,  # Добавляем список тегов в контекст
-    }
-    return render(request, 'home.html', context)
+class TaskDeleteView(DeleteView):
+    model = Task
+    template_name = 'todo/task_confirm_delete.html'
+    success_url = reverse_lazy('home')
 
-
-
-
-
-
-def task_create(request):
-    if request.method == 'POST':
-        form = TaskForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    else:
-        form = TaskForm()
-    return render(request, 'todo/task_form.html', {'form': form})
-
-
-def task_update(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    if request.method == 'POST':
-        form = TaskForm(request.POST, instance=task)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
-    else:
-        form = TaskForm(instance=task)
-    return render(request, 'todo/task_form.html', {'form': form})
+class TaskToggleView(View):
+    def post(self, request, pk):
+        task = get_object_or_404(Task, pk=pk)
+        task.is_done = not task.is_done
+        task.save()
+        return redirect('home')
 
 
-def task_toggle(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    task.is_done = not task.is_done
-    task.save()
-    return redirect('home')
+class TagListView(ListView):
+    model = Tag
+    template_name = 'tag_list.html'
+    context_object_name = 'tags'
 
+class TagCreateView(CreateView):
+    model = Tag
+    form_class = TagForm
+    template_name = 'todo/tag_form.html'
+    success_url = reverse_lazy('tag_list')
 
-def task_delete(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    task.delete()
-    return redirect('home')
+class TagUpdateView(UpdateView):
+    model = Tag
+    form_class = TagForm
+    template_name = 'todo/tag_form.html'
+    success_url = reverse_lazy('tag_list')
 
-
-def tag_list(request):
-    return render(request, 'tag_list.html')
-
-def add_task(request):
-    return render(request, 'task_form.html')
-
-
-def update_task(request, pk):
-    task = get_object_or_404(Task, pk=pk)  # Получаем задачу по её первичному ключу (id)
-    if request.method == 'POST':
-        form = TaskForm(request.POST, instance=task)
-        if form.is_valid():
-            form.save()
-            return redirect('home')  # Перенаправление на главную страницу после обновления
-    else:
-        form = TaskForm(instance=task)
-    return render(request, 'task_form.html', {'form': form})
-
-
-def delete_task(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    task.delete()
-    return redirect('home')
-
-
-def toggle_task_status(request, pk):
-    task = get_object_or_404(Task, pk=pk)
-    task.is_done = not task.is_done
-    task.save()
-    return redirect('home')
-
-
-def add_tag(request):
-    if request.method == 'POST':
-        form = TagForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('tag_list')
-    else:
-        form = TagForm()
-    return render(request, 'todo/tag_form.html', {'form': form})
+class TagDeleteView(DeleteView):
+    model = Tag
+    template_name = 'todo/tag_confirm_delete.html'
+    success_url = reverse_lazy('tag_list')
