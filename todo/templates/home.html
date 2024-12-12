@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <a href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="list-group-item">
+                    <a href="{% url 'tag_list' %}">Tags</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9">
+            <h1>TODO List</h1>
+            <a href="{% url 'add_task' %}" class="btn btn-primary mb-3">Add Task</a>
+
+            {% if tasks %}
+                {% for task in tasks %}
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ task.content }}</h5>
+                            <p class="card-text">
+                                Created: {{ task.created_at|date:"F d, Y, g:i a" }}<br>
+                                {% if task.deadline %}
+                                    Deadline: {{ task.deadline|date:"F d, Y, g:i a" }}<br>
+                                {% endif %}
+                                Status: <span class="badge {% if task.is_done %}bg-success{% else %}bg-danger{% endif %}">{{ task.is_done|yesno:"Done,Not done" }}</span><br>
+                                Tags: 
+                                {% for tag in task.tags.all %}
+                                    <span class="badge bg-secondary">{{ tag.name }}</span>
+                                {% endfor %}
+                            </p>
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'update_task' task.id %}" class="btn btn-sm btn-warning">Update</a>
+                                <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-danger">Delete</a>
+                                <form method="post" action="{% url 'toggle_task_status' task.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    {% if task.is_done %}
+                                        <button type="submit" class="btn btn-sm btn-secondary">Undo</button>
+                                    {% else %}
+                                        <button type="submit" class="btn btn-sm btn-success">Complete</button>
+                                    {% endif %}
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>No tasks found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -14,18 +14,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-from . import views
+from django.urls import path, include
+from todo import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', views.home, name='home'),
-    path('tags/', views.tag_list, name='tag_list'),
-    path('tasks/add/', views.task_create, name='task_create'),
-    path('tasks/<int:pk>/update/', views.task_update, name='task_update'),
-    path('tasks/<int:pk>/delete/', views.task_delete, name='task_delete'),
-    path('tasks/<int:pk>/toggle/', views.task_toggle, name='task_toggle'),
-    path('tags/add/', views.tag_create, name='tag_create'),
-    path('tags/<int:pk>/update/', views.tag_update, name='tag_update'),
-    path('tags/<int:pk>/delete/', views.tag_delete, name='tag_delete'),
+    path('', include('todo.urls')),
+    #path('', views.home, name='home'),
+    #path('add-task/', views.add_task, name='add_task'),
+    #path('update-task/<int:pk>/', views.update_task, name='update_task'),
+    #path('delete-task/<int:pk>/', views.delete_task, name='delete_task'),
+    #path('toggle-task-status/<int:pk>/', views.toggle_task_status, name='toggle_task_status'),
+    #path('tags/', views.tag_list, name='tag_list'),
+
+    # Пути для работы с тегами
+    #path('tags/add/', views.add_tag, name='add_tag'),
+    #path('tags/update/<int:pk>/', views.update_tag, name='update_tag'),  # Путь для обновления тега
+    #path('tags/delete/<int:pk>/', views.delete_tag, name='delete_tag'),  # Путь для удаления тега
 ]
